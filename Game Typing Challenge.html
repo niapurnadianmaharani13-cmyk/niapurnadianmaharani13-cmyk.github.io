@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typing Challenge</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            color: #1a202c;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+        }
+
+        h1 {
+            color: #2b6cb0;
+            margin-bottom: 10px;
+        }
+
+        .start-screen, .game-screen, .instructions, .developer-info, .game-over-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .game-status {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #4a5568;
+        }
+
+        #timer {
+            color: #e53e3e;
+        }
+
+        #word-display {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            min-height: 40px;
+            background-color: #e2e8f0;
+            color: #2d3748;
+        }
+        
+        #typed-input {
+            width: 100%;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #cbd5e0;
+            font-size: 1.2em;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        #typed-input:focus {
+            border-color: #4299e1;
+        }
+        
+        .feedback {
+            margin-top: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            min-height: 20px;
+        }
+
+        button {
+            padding: 12px 25px;
+            font-size: 16px;
+            color: #ffffff;
+            background-color: #48bb78;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            margin: 5px;
+        }
+
+        button:hover {
+            background-color: #38a169;
+            transform: translateY(-2px);
+        }
+
+        #instructionsButton { background-color: #ecc94b; }
+        #developerButton { background-color: #718096; }
+        #restartButton { background-color: #e53e3e; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="start-screen" class="start-screen">
+        <h1>Typing Challenge</h1>
+        <p>Latih kecepatan mengetikmu! Ketik kata-kata secepat mungkin.</p>
+        <button id="startButton">Mulai Game</button>
+        <button id="instructionsButton">Petunjuk</button>
+        <button id="developerButton">Developer</button>
+    </div>
+
+    <div id="instructions" style="display: none;">
+        <h2>Petunjuk Bermain</h2>
+        <p>Setelah menekan tombol 'Mulai', sebuah kata akan muncul di layar. Tugasmu adalah mengetik kata tersebut secepat dan seakurat mungkin. Jika kata yang kamu ketik benar, skor akan bertambah dan kata baru akan muncul. Perhatikan waktu yang terus berjalan!</p>
+        <p>Game akan berakhir setelah waktu habis.</p>
+        <button id="backToStartInstructions">Kembali</button>
+    </div>
+
+    <div id="developer-info" style="display: none;">
+        <h2>Info Developer</h2>
+        <p>Pengembang: **Nia Purnadian Maharani**</p>
+        <p>Tahun: **2025**</p>
+        <p>Guru: **TKJ SMK Bhakti Praja Adiwerna**</p>
+        <button id="backToStartDeveloper">Kembali</button>
+    </div>
+
+    <div id="game-screen" style="display: none;">
+        <div class="game-status">
+            <div>Skor: <span id="score">0</span></div>
+            <div>Waktu: <span id="timer">60</span> detik</div>
+        </div>
+        <div id="word-display"></div>
+        <input type="text" id="typed-input" placeholder="Ketik kata di sini...">
+        <div class="feedback" id="feedback"></div>
+    </div>
+    
+    <div id="game-over-screen" style="display: none;">
+        <h2>Waktu Habis!</h2>
+        <p>Skor Akhirmu: <span id="final-score">0</span></p>
+        <p>Kecepatan Mengetik: <span id="typing-speed">0</span> WPM</p>
+        <button id="restartButton">Main Lagi</button>
+    </div>
+
+</div>
+
+<script>
+    const startScreen = document.getElementById('start-screen');
+    const instructionsScreen = document.getElementById('instructions');
+    const developerInfoScreen = document.getElementById('developer-info');
+    const gameScreen = document.getElementById('game-screen');
+    const gameOverScreen = document.getElementById('game-over-screen');
+
+    const startButton = document.getElementById('startButton');
+    const instructionsButton = document.getElementById('instructionsButton');
+    const developerButton = document.getElementById('developerButton');
+    const restartButton = document.getElementById('restartButton');
+    const backToStartInstructions = document.getElementById('backToStartInstructions');
+    const backToStartDeveloper = document.getElementById('backToStartDeveloper');
+    
+    const scoreDisplay = document.getElementById('score');
+    const timerDisplay = document.getElementById('timer');
+    const wordDisplay = document.getElementById('word-display');
+    const typedInput = document.getElementById('typed-input');
+    const finalScoreDisplay = document.getElementById('final-score');
+    const typingSpeedDisplay = document.getElementById('typing-speed');
+    const feedback = document.getElementById('feedback');
+
+    const words = ["jaringan", "komputer", "telekomunikasi", "ethernet", "router", "switch", "internet", "protokol", "topologi", "server", "kabel", "nirkabel", "bandwith", "firewall", "domain"];
+
+    let score = 0;
+    let time = 60;
+    let timerInterval;
+    let wordCount = 0;
+
+    function startGame() {
+        score = 0;
+        time = 60;
+        wordCount = 0;
+        scoreDisplay.textContent = score;
+        timerDisplay.textContent = time;
+        feedback.textContent = '';
+
+        startScreen.style.display = 'none';
+        gameScreen.style.display = 'flex';
+        gameOverScreen.style.display = 'none';
+
+        typedInput.focus();
+        typedInput.value = '';
+        
+        displayNewWord();
+        startTimer();
+    }
+
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            time--;
+            timerDisplay.textContent = time;
+            if (time <= 0) {
+                endGame();
+            }
+        }, 1000);
+    }
+    
+    function displayNewWord() {
+        const randomIndex = Math.floor(Math.random() * words.length);
+        wordDisplay.textContent = words[randomIndex];
+    }
+    
+    function checkWord() {
+        const currentWord = wordDisplay.textContent;
+        const typedWord = typedInput.value.trim();
+
+        if (typedWord === currentWord) {
+            score += 1;
+            wordCount += currentWord.length;
+            scoreDisplay.textContent = score;
+            typedInput.value = '';
+            feedback.textContent = '🎉 Benar!';
+            displayNewWord();
+        } else {
+            feedback.textContent = '';
+        }
+    }
+    
+    function endGame() {
+        clearInterval(timerInterval);
+        gameScreen.style.display = 'none';
+        gameOverScreen.style.display = 'flex';
+        
+        const minutes = (60 - time) / 60;
+        const wpm = Math.round(wordCount / 5 / minutes); // WPM = (karakter / 5) / waktu dalam menit
+        
+        finalScoreDisplay.textContent = score;
+        typingSpeedDisplay.textContent = `${wpm > 0 ? wpm : 0} WPM`;
+    }
+
+    function showInstructions() {
+        startScreen.style.display = 'none';
+        instructionsScreen.style.display = 'flex';
+    }
+
+    function showDeveloperInfo() {
+        startScreen.style.display = 'none';
+        developerInfoScreen.style.display = 'flex';
+    }
+
+    function backToStart() {
+        instructionsScreen.style.display = 'none';
+        developerInfoScreen.style.display = 'none';
+        gameOverScreen.style.display = 'none';
+        startScreen.style.display = 'flex';
+    }
+
+    startButton.addEventListener('click', startGame);
+    restartButton.addEventListener('click', startGame);
+    instructionsButton.addEventListener('click', showInstructions);
+    developerButton.addEventListener('click', showDeveloperInfo);
+    backToStartInstructions.addEventListener('click', backToStart);
+    backToStartDeveloper.addEventListener('click', backToStart);
+    
+    typedInput.addEventListener('input', checkWord);
+
+</script>
+
+</body>
+</html>
